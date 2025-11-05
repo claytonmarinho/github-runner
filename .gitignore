@@ -1,0 +1,20 @@
+# Environment variables (contains secrets)
+.env
+
+# Runner data directory
+runner-data/
+.github-runner/
+
+# Docker volumes
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

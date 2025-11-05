@@ -1,0 +1,59 @@
+services:
+  github-runner:
+    image: myoung34/github-runner:latest
+    container_name: ${GITHUB_RUNNER_CONTAINER:-github-runner}
+    restart: unless-stopped
+    environment:
+      # Runner configuration
+      RUNNER_NAME: ${GITHUB_RUNNER_NAME:-github-runner}
+      RUNNER_WORKDIR: /tmp/runner
+      RUNNER_SCOPE: ${RUNNER_SCOPE:-org}
+
+      # Organization-level runners (recommended for multi-repo)
+      # Uncomment these and comment out REPO_URL to use org-level runners
+      ORG_NAME: ${GITHUB_ORG_NAME}
+      ACCESS_TOKEN: ${GITHUB_TOKEN}
+
+      # Repository-level runners
+      # REPO_URL: https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}
+      # ACCESS_TOKEN: ${GITHUB_TOKEN}
+
+      # Runner labels (comma-separated)
+      LABELS: ${GITHUB_RUNNER_LABELS:-self-hosted,linux,docker}
+
+      # Ephemeral runner (removes itself after each job)
+      EPHEMERAL: ${RUNNER_EPHEMERAL:-false}
+
+      # Disable automatic updates
+      DISABLE_AUTO_UPDATE: ${RUNNER_DISABLE_AUTO_UPDATE:-false}
+
+    volumes:
+      # Docker socket for Docker-in-Docker support
+      - /var/run/docker.sock:/var/run/docker.sock
+
+      # Runner work directory (persists between runs)
+      - ${GITHUB_RUNNER_WORKDIR:-./runner-data}:/tmp/runner
+
+      # Optional: Cache directories for faster builds
+      - runner-cache-pnpm:/home/runner/.pnpm-store
+      - runner-cache-node:/home/runner/.cache
+
+    # Security settings
+    security_opt:
+      - label:disable
+
+    # Resource limits (adjust based on your needs)
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+
+volumes:
+  runner-cache-pnpm:
+    driver: local
+  runner-cache-node:
+    driver: local
